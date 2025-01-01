@@ -1,0 +1,41 @@
+name: Process Grades
+
+on:
+  push:
+    paths:
+      - "notlar.txt"
+      - "grade_calculator.py"
+      - "test_grade_calculator.py"
+
+jobs:
+  process_grades:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: python -m pip install --upgrade pip
+
+    - name: Run tests
+      run: python -m unittest test_grade_calculator.py
+
+    - name: Run grade processor
+      run: python grade_calculator.py
+
+    - name: Check for invalid scores
+      run: |
+        if grep -q "Invalid Score" sonuclar.txt; then
+          echo "Error: Invalid Score found in sonuclar.txt"
+          exit 1
+        fi
+
+    - name: Display results
+      if: success()
+      run: cat sonuclar.txt
